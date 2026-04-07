@@ -70,6 +70,9 @@
         </div>
 
         <div class="p-4 px-lg-5 py-4">
+            @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
             <div class="soft-card p-3">
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
@@ -78,6 +81,7 @@
                                 <th>Nama</th>
                                 <th>Nomor WhatsApp</th>
                                 <th>Terdaftar</th>
+                                <th class="text-end">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="border-top">
@@ -98,10 +102,23 @@
                                         @endif
                                     </td>
                                     <td>{{ $user->created_at?->format('d M Y') ?? '-' }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ route('admin.users.edit', $user) }}" class="text-decoration-none text-primary me-3">Edit</a>
+                                        <form
+                                            action="{{ route('admin.users.destroy', $user) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Yakin mau hapus user ini? Semua dokumen user akan ikut terhapus.')"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link p-0 text-danger text-decoration-none">Hapus</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">Belum ada user.</td>
+                                    <td colspan="4" class="text-center text-muted py-4">Belum ada user.</td>
                                 </tr>
                             @endforelse
                         </tbody>

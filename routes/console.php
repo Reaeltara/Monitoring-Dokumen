@@ -70,32 +70,48 @@ Artisan::command('documents:send-reminders', function () {
             $daysLeft
         );
 
+        $logKey = [
+            'document_id' => $document->id,
+            'offset_days' => $daysLeft,
+            'sent_date' => $today->toDateString(),
+        ];
+
         try {
             $response = $wablas->sendText($phone, $message, ['flag' => 'instant']);
 
-            DB::table('document_reminder_logs')->insert([
-                'document_id' => $document->id,
+            $payload = [
                 'user_id' => $user->id,
-                'offset_days' => $daysLeft,
-                'sent_date' => $today->toDateString(),
                 'status' => 'sent',
                 'response' => json_encode($response),
-                'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            if ($isTestMode) {
+                DB::table('document_reminder_logs')->updateOrInsert(
+                    $logKey,
+                    $payload + ['created_at' => now()]
+                );
+            } else {
+                DB::table('document_reminder_logs')->insert($logKey + $payload + ['created_at' => now()]);
+            }
 
             $sentCount++;
         } catch (\Throwable $e) {
-            DB::table('document_reminder_logs')->insert([
-                'document_id' => $document->id,
+            $payload = [
                 'user_id' => $user->id,
-                'offset_days' => $daysLeft,
-                'sent_date' => $today->toDateString(),
                 'status' => 'failed',
                 'response' => json_encode(['error' => $e->getMessage()]),
-                'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ];
+
+            if ($isTestMode) {
+                DB::table('document_reminder_logs')->updateOrInsert(
+                    $logKey,
+                    $payload + ['created_at' => now()]
+                );
+            } else {
+                DB::table('document_reminder_logs')->insert($logKey + $payload + ['created_at' => now()]);
+            }
 
             $failedCount++;
         }
