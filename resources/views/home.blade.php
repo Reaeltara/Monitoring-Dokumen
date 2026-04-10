@@ -41,6 +41,50 @@
             border-radius: 16px;
             box-shadow: 0 18px 40px rgba(76, 29, 149, 0.08);
         }
+        .wa-contact-wrap {
+            width: 190px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .wa-contact {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 46px;
+            padding: 0 16px;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #16a34a;
+            text-decoration: none;
+            box-shadow: 0 12px 20px rgba(15, 23, 42, 0.08);
+            border: 1px solid #d1fae5;
+            overflow: hidden;
+            width: 46px;
+            transition: width 0.25s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .wa-contact-wrap:hover .wa-contact {
+            width: 190px;
+            background: #ecfdf3;
+            color: #15803d;
+            box-shadow: 0 14px 24px rgba(16, 185, 129, 0.2);
+        }
+        .wa-contact span {
+            white-space: nowrap;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .wa-contact-wrap:hover .wa-text { opacity: 1; }
+        .wa-icon {
+            width: 34px;
+            height: 34px;
+            display: inline-block;
+            flex: 0 0 34px;
+            background: transparent;
+            border-radius: 50%;
+            padding: 0;
+        }
+        .wa-icon img { width: 34px; height: 34px; display: block; border-radius: 50%; }
         .btn-soft { border-radius: 12px; }
         .text-primary { color: #7c3aed !important; }
         .text-secondary { color: #5b4e8c !important; }
@@ -58,6 +102,13 @@
             @if (auth()->user()?->is_admin)
                 <a class="nav-pill" href="{{ route('admin.users.index') }}">Admin</a>
             @endif
+            @php
+                $adminWaRaw = (string) config('services.admin_whatsapp');
+                $adminWaDigits = preg_replace('/\D+/', '', $adminWaRaw);
+                if (str_starts_with($adminWaDigits, '0')) {
+                    $adminWaDigits = '62'.ltrim($adminWaDigits, '0');
+                }
+            @endphp
         </nav>
         <div class="mt-auto p-3 border-top">
             <div class="small text-secondary mb-2">Login sebagai: <strong>{{ auth()->user()->name }}</strong></div>
@@ -71,10 +122,12 @@
     <main class="flex-fill">
         <div class="p-4 px-lg-5 py-4">
             <div class="soft-card p-4">
-                <h1 class="h5 fw-semibold mb-2">Panduan Penggunaan DoCExpire</h1>
-                <p class="text-secondary mb-0">
-                    Ikuti langkah berikut agar dokumenmu selalu terpantau dan pengingat otomatis terkirim tepat waktu.
-                </p>
+                <div>
+                    <h1 class="h5 fw-semibold mb-2">Panduan Penggunaan DoCExpire</h1>
+                    <p class="text-secondary mb-0">
+                        Ikuti langkah berikut agar dokumenmu selalu terpantau dan pengingat otomatis terkirim tepat waktu.
+                    </p>
+                </div>
             </div>
 
             <div class="row g-4 mt-1">
@@ -101,7 +154,7 @@
                     <div class="soft-card p-4 h-100">
                         <h2 class="h6 fw-semibold mb-3">Langkah 3: Cek Jadwal Reminder</h2>
                         <ul class="text-secondary mb-0">
-                            <li>Reminder akan dikirim pada H‑30, H‑7, H‑3, dan H‑1.</li>
+                            <li>Reminder akan dikirim pada H-30, H-7, H-3, dan H-1.</li>
                             <li>Isi tanggal kadaluarsa dengan benar supaya jadwalnya akurat.</li>
                         </ul>
                     </div>
@@ -120,9 +173,21 @@
             <div class="soft-card p-4 mt-4">
                 <h2 class="h6 fw-semibold mb-2">Contoh Alur</h2>
                 <p class="text-secondary mb-0">
-                    Tambah dokumen → sistem hitung H‑30/H‑7/H‑3/H‑1 → reminder otomatis masuk ke WhatsApp kamu.
+                    Tambah dokumen -> sistem hitung H-30/H-7/H-3/H-1 -> reminder otomatis masuk ke WhatsApp kamu.
                 </p>
             </div>
+            @if ($adminWaDigits)
+                <div class="d-flex justify-content-end mt-3">
+                    <div class="wa-contact-wrap">
+                        <a class="wa-contact" href="https://wa.me/{{ $adminWaDigits }}" target="_blank" rel="noopener">
+                            <span class="wa-icon" aria-hidden="true">
+                                <img src="/asset/Logo-WhatsApp.png" alt="WhatsApp">
+                            </span>
+                            <span class="wa-text">Hubungi Admin</span>
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
     </main>
 </div>

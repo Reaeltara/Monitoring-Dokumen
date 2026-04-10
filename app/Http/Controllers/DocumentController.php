@@ -119,6 +119,64 @@ class DocumentController extends Controller
         );
     }
 
+    public function exportSummary()
+    {
+        $userId = $this->currentUserId();
+        $today = now()->startOfDay();
+
+        $documents = Document::ownedBy($userId)
+            ->orderBy('tanggal_kadaluarsa')
+            ->get();
+
+        $totalDocs = $documents->count();
+        $activeCount = 0;
+        $expiringCount = 0;
+        $expiredCount = 0;
+
+        $documents = $documents->map(function (Document $doc) use ($today, &$activeCount, &$expiringCount, &$expiredCount) {
+            $statusLabel = '-';
+            $daysLeft = null;
+
+            if ($doc->tanggal_kadaluarsa) {
+                $expiry = \Carbon\Carbon::parse($doc->tanggal_kadaluarsa)->startOfDay();
+                $daysLeft = $today->diffInDays($expiry, false);
+
+                if ($daysLeft < 0) {
+                    $statusLabel = 'Kadaluarsa';
+                    $expiredCount++;
+                } elseif ($daysLeft <= 60) {
+                    $statusLabel = 'Akan Habis';
+                    $expiringCount++;
+                } else {
+                    $statusLabel = 'Aktif';
+                    $activeCount++;
+                }
+            }
+
+            $doc->status_label = $statusLabel;
+            $doc->days_left = $daysLeft;
+
+            return $doc;
+        });
+
+        $data = [
+            'generatedAt' => now(),
+            'totalDocs' => $totalDocs,
+            'activeCount' => $activeCount,
+            'expiringCount' => $expiringCount,
+            'expiredCount' => $expiredCount,
+            'documents' => $documents,
+        ];
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.export-summary', $data);
+
+            return $pdf->download('rekap-dokumen.pdf');
+        }
+
+        return view('documents.export-summary', $data);
+    }
+
     public function destroy(int $id): RedirectResponse
     {
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);

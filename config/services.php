@@ -34,4 +34,6 @@ return [
         'test' => env('REMINDER_TEST', false),
     ],
 
+    'admin_whatsapp' => env('ADMIN_WHATSAPP'),
+
 ];

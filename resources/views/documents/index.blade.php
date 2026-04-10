@@ -189,6 +189,7 @@
                         <a href="{{ route('documents.index') }}" class="btn btn-outline-secondary btn-soft">Reset</a>
                     @endif
                 </form>
+                <a href="{{ route('documents.export') }}" class="btn btn-outline-primary btn-soft">Export Rekap PDF</a>
                 <a href="{{ route('documents.create') }}" class="btn btn-primary btn-soft">+ Tambah Dokumen</a>
             </div>
         </div>
