@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}?v={{ filemtime(public_path('css/dashboard.css')) }}" rel="stylesheet">
 </head>
+<h1 style="color:red;">INI DASHBOARD TERBARU 123</h1>
 <body class="bg-light text-dark">
 <nav class="navbar navbar-expand-lg bg-white bg-opacity-75 border-bottom sticky-top navbar-blur">
     <div class="container">
