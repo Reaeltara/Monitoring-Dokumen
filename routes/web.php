@@ -30,8 +30,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/home', function () {
             return view('home');
         })->name('home');
-        Route::get('/wablas/test', [WablasController::class, 'test'])->name('wablas.test');
-        Route::post('/wablas/test', [WablasController::class, 'test'])->name('wablas.test');
+Route::match(['get', 'post'], '/wablas/test', [WablasController::class, 'test'])->name('wablas.test');
         Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
         Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
         Route::get('/documents/export-pdf', [DocumentController::class, 'exportSummary'])->name('documents.export');
