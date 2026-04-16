@@ -6,6 +6,7 @@
     <title>DoCExpire - Panduan Penggunaan</title>
     <link rel="icon" href="/asset/Logo.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -15,43 +16,62 @@
             width: 260px;
             min-width: 260px;
             flex: 0 0 260px;
-            background: #ffffff;
-            border-right: 1px solid #e9d5ff;
+            background: linear-gradient(180deg, #6b2bff 0%, #4c1d95 100%);
+            color: #ffffff;
+            border-right: none;
         }
         .sidebar-brand {
             font-weight: 700;
-            color: #7c3aed;
+            color: #ffffff;
         }
         .nav-pill {
             display: block;
-            padding: 0.6rem 0.9rem;
-            border-radius: 12px;
-            color: #0f172a;
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            color: rgba(255,255,255,0.92);
             text-decoration: none;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         .nav-pill.active {
-            background: #ede9fe;
-            color: #7c3aed;
+            background: rgba(255,255,255,0.18);
+            color: #ffffff;
             font-weight: 600;
         }
-        .nav-pill:hover { background: #f3e8ff; }
+        .nav-pill:hover { background: rgba(255,255,255,0.14); }
+        .sidebar .mt-auto {
+            border-top: 1px solid rgba(255,255,255,0.18);
+        }
+        .sidebar .text-secondary {
+            color: rgba(255,255,255,0.75) !important;
+        }
         .topbar { border-bottom: 1px solid #e9d5ff; background: #ffffff; }
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+        .nav-icon {
+            width: 18px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+        }
         .soft-card {
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 18px 40px rgba(76, 29, 149, 0.08);
         }
         .wa-contact-wrap {
-            width: 190px;
+            width: 210px;
             display: flex;
             justify-content: flex-end;
         }
         .wa-contact {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             height: 46px;
-            padding: 0 16px;
             border-radius: 999px;
             background: #ffffff;
             color: #16a34a;
@@ -63,7 +83,7 @@
             transition: width 0.25s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
         }
         .wa-contact-wrap:hover .wa-contact {
-            width: 190px;
+            width: 200px;
             background: #ecfdf3;
             color: #15803d;
             box-shadow: 0 14px 24px rgba(16, 185, 129, 0.2);
@@ -71,7 +91,7 @@
         .wa-contact span {
             white-space: nowrap;
             font-weight: 600;
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.2s ease;
         }
         .wa-contact-wrap:hover .wa-text { opacity: 1; }
@@ -84,7 +104,7 @@
             border-radius: 50%;
             padding: 0;
         }
-        .wa-icon img { width: 34px; height: 34px; display: block; border-radius: 50%; }
+        .wa-icon img { width: 54px; height: 34px; display: block; border-radius: 50%; }
         .btn-soft { border-radius: 12px; }
         .text-primary { color: #7c3aed !important; }
         .text-secondary { color: #5b4e8c !important; }
@@ -93,14 +113,24 @@
 <body>
 <div class="app-shell d-flex">
     <aside class="sidebar d-none d-lg-flex flex-column">
-        <div class="p-4 border-bottom">
-            <div class="sidebar-brand fs-4">DoCExpire</div>
+        <div class="p-4 border-bottom d-flex align-items-center gap-2">
+            <img src="/asset/Logo.png" alt="DoCExpire" class="sidebar-logo">
+            <div class="sidebar-brand fs-4 mb-0">DoCExpire</div>
         </div>
         <nav class="p-3 d-grid gap-2">
-            <a class="nav-pill active" href="{{ route('home') }}">Panduan Penggunaan</a>
-            <a class="nav-pill" href="{{ route('documents.index') }}">Dokumen</a>
+            <a class="nav-pill active" href="{{ route('home') }}">
+                <span class="nav-icon me-2"><i class="bi bi-book"></i></span>
+                Panduan Penggunaan
+            </a>
+            <a class="nav-pill" href="{{ route('documents.index') }}">
+                <span class="nav-icon me-2"><i class="bi bi-file-earmark-text"></i></span>
+                Dokumen
+            </a>
             @if (auth()->user()?->is_admin)
-                <a class="nav-pill" href="{{ route('admin.users.index') }}">Admin</a>
+                <a class="nav-pill" href="{{ route('admin.users.index') }}">
+                    <span class="nav-icon me-2"><i class="bi bi-people"></i></span>
+                    Admin
+                </a>
             @endif
             @php
                 $adminWaRaw = (string) config('services.admin_whatsapp');

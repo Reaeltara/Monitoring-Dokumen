@@ -35,7 +35,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/documents/{document}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
         Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
         Route::get('/documents/export-pdf', [DocumentController::class, 'exportSummary'])->name('documents.export');
+        Route::get('/documents/export-pdf/download', [DocumentController::class, 'exportSummaryDownload'])->name('documents.export.download');
         Route::resource('documents', DocumentController::class);
+
     });
 });
 

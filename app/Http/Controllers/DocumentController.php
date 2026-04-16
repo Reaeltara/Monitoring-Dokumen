@@ -8,7 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -50,7 +52,6 @@ class DocumentController extends Controller
     public function show(int $id): View
     {
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);
-
         return view('documents.show', compact('document'));
     }
 
@@ -72,7 +73,6 @@ class DocumentController extends Controller
     public function edit(int $id): View
     {
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);
-
         return view('documents.edit', compact('document'));
     }
 
@@ -82,6 +82,7 @@ class DocumentController extends Controller
 
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);
         $document->update($validated);
+
         $this->storePdf($request, $document);
 
         return redirect()->route('documents.index')
@@ -92,7 +93,6 @@ class DocumentController extends Controller
     {
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);
 
-        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
         abort_unless($document->pdf_path && $disk->exists($document->pdf_path), 404);
 
@@ -109,7 +109,6 @@ class DocumentController extends Controller
     {
         $document = Document::ownedBy($this->currentUserId())->findOrFail($id);
 
-        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
         abort_unless($document->pdf_path && $disk->exists($document->pdf_path), 404);
 
@@ -120,6 +119,23 @@ class DocumentController extends Controller
     }
 
     public function exportSummary()
+    {
+        $data = $this->getExportSummaryData();
+        return view('documents.export-summary', $data);
+    }
+
+    public function exportSummaryDownload()
+    {
+        $data = $this->getExportSummaryData();
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+$pdf = Pdf::loadView('documents.export-summary', $data);
+            return $pdf->download('rekap-dokumen.pdf');
+        }
+        abort(404, 'PDF library tidak tersedia');
+    }
+
+
+    private function getExportSummaryData()
     {
         $userId = $this->currentUserId();
         $today = now()->startOfDay();
@@ -133,33 +149,26 @@ class DocumentController extends Controller
         $expiringCount = 0;
         $expiredCount = 0;
 
-        $documents = $documents->map(function (Document $doc) use ($today, &$activeCount, &$expiringCount, &$expiredCount) {
-            $statusLabel = '-';
-            $daysLeft = null;
+        $documents->each(function ($doc) use ($today, &$activeCount, &$expiringCount, &$expiredCount) {
+            if (!$doc->tanggal_kadaluarsa) return;
 
-            if ($doc->tanggal_kadaluarsa) {
-                $expiry = \Carbon\Carbon::parse($doc->tanggal_kadaluarsa)->startOfDay();
-                $daysLeft = $today->diffInDays($expiry, false);
+            $expiry = \Carbon\Carbon::parse($doc->tanggal_kadaluarsa)->startOfDay();
+            $daysLeft = $today->diffInDays($expiry, false);
 
-                if ($daysLeft < 0) {
-                    $statusLabel = 'Kadaluarsa';
-                    $expiredCount++;
-                } elseif ($daysLeft <= 60) {
-                    $statusLabel = 'Akan Habis';
-                    $expiringCount++;
-                } else {
-                    $statusLabel = 'Aktif';
-                    $activeCount++;
-                }
+            if ($daysLeft < 0) {
+                $doc->status_label = 'Kadaluarsa';
+                $expiredCount++;
+            } elseif ($daysLeft <= 60) {
+                $doc->status_label = 'Akan Habis';
+                $expiringCount++;
+            } else {
+                $doc->status_label = 'Aktif';
+                $activeCount++;
             }
-
-            $doc->status_label = $statusLabel;
             $doc->days_left = $daysLeft;
-
-            return $doc;
         });
 
-        $data = [
+        return [
             'generatedAt' => now(),
             'totalDocs' => $totalDocs,
             'activeCount' => $activeCount,
@@ -167,15 +176,8 @@ class DocumentController extends Controller
             'expiredCount' => $expiredCount,
             'documents' => $documents,
         ];
-
-        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.export-summary', $data);
-
-            return $pdf->download('rekap-dokumen.pdf');
-        }
-
-        return view('documents.export-summary', $data);
     }
+
 
     public function destroy(int $id): RedirectResponse
     {
@@ -212,7 +214,6 @@ class DocumentController extends Controller
             return;
         }
 
-        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
         if ($document->pdf_path && $disk->exists($document->pdf_path)) {
@@ -231,9 +232,7 @@ class DocumentController extends Controller
     private function currentUserId(): int
     {
         $userId = Auth::id();
-
         abort_unless($userId !== null, 403);
-
         return (int) $userId;
     }
 }
